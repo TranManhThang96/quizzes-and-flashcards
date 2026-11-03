@@ -1,13 +1,20 @@
 import os
+from collections.abc import AsyncIterator, Awaitable, Callable
 from pathlib import Path
 
 import psycopg
 import pytest
+import pytest_asyncio
 from alembic import command
 from alembic.config import Config
+from fastapi import FastAPI
+from httpx import ASGITransport, AsyncClient, Response
 from sqlalchemy.engine import make_url
 
 from app.config import Settings
+from app.main import create_app
+from app.models import User
+from app.users import create_user
 
 TEST_DB_URL = os.environ.get(
     "QUIZZ_TEST_DATABASE_URL",
@@ -57,3 +64,52 @@ def clean_db(migrated_database: None) -> None:
 @pytest.fixture
 def settings() -> Settings:
     return Settings(database_url=TEST_DB_URL, app_origin=ORIGIN, environment="prod")
+
+
+@pytest_asyncio.fixture
+async def app(settings: Settings, clean_db: None) -> AsyncIterator[FastAPI]:
+    application = create_app(settings)
+    yield application
+    await application.state.engine.dispose()
+
+
+@pytest_asyncio.fixture
+async def client(app: FastAPI) -> AsyncIterator[AsyncClient]:
+    async with AsyncClient(
+        transport=ASGITransport(app=app),
+        base_url=ORIGIN,
+        headers={"origin": ORIGIN},
+    ) as c:
+        yield c
+
+
+@pytest_asyncio.fixture
+async def other_client(app: FastAPI) -> AsyncIterator[AsyncClient]:
+    """A second browser: separate cookie jar, same app."""
+    async with AsyncClient(
+        transport=ASGITransport(app=app),
+        base_url=ORIGIN,
+        headers={"origin": ORIGIN},
+    ) as c:
+        yield c
+
+
+@pytest_asyncio.fixture
+async def make_user(app: FastAPI) -> Callable[..., Awaitable[User]]:
+    async def _make(
+        username: str = "alice", password: str = "correct-horse", role: str = "user"
+    ) -> User:
+        async with app.state.sessionmaker() as session:
+            user = await create_user(
+                session, username=username, password=password, role=role
+            )
+            await session.commit()
+            return user
+
+    return _make
+
+
+async def login(client: AsyncClient, username: str, password: str) -> Response:
+    return await client.post(
+        "/api/auth/login", json={"username": username, "password": password}
+    )
