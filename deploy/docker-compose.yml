@@ -1,0 +1,36 @@
+name: quizz
+
+services:
+  db:
+    image: postgres:17.11-alpine
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: quizz
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?set POSTGRES_PASSWORD in deploy/.env}
+      POSTGRES_DB: quizz
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U quizz -d quizz"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+
+  api:
+    build: ../backend
+    restart: unless-stopped
+    depends_on:
+      db:
+        condition: service_healthy
+    environment:
+      QUIZZ_DATABASE_URL: postgresql+psycopg://quizz:${POSTGRES_PASSWORD}@db:5432/quizz
+      QUIZZ_APP_ORIGIN: ${QUIZZ_APP_ORIGIN:?set QUIZZ_APP_ORIGIN in deploy/.env}
+      QUIZZ_ENVIRONMENT: ${QUIZZ_ENVIRONMENT:-prod}
+      QUIZZ_COOKIE_SECURE: ${QUIZZ_COOKIE_SECURE:-true}
+      FORWARDED_ALLOW_IPS: ${FORWARDED_ALLOW_IPS:-*}
+    ports:
+      # Loopback only: the host nginx is the single public entry point.
+      - "127.0.0.1:8000:8000"
+
+volumes:
+  pgdata:

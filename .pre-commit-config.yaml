@@ -19,3 +19,9 @@ repos:
         language: system
         pass_filenames: false
         files: ^backend/
+      - id: openapi-contract
+        name: openapi.json up to date
+        entry: bash -c 'cd backend && uv run python -m scripts.export_openapi >/dev/null && git diff --exit-code -- ../docs/architecture/openapi.json'
+        language: system
+        pass_filenames: false
+        files: ^(backend/|docs/architecture/openapi\.json$)
