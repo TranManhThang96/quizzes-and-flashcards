@@ -1,0 +1,21 @@
+repos:
+  - repo: local
+    hooks:
+      - id: ruff-check
+        name: ruff check
+        entry: uv run --project backend ruff check backend
+        language: system
+        pass_filenames: false
+        files: ^backend/
+      - id: ruff-format
+        name: ruff format --check
+        entry: uv run --project backend ruff format --check backend
+        language: system
+        pass_filenames: false
+        files: ^backend/
+      - id: mypy
+        name: mypy
+        entry: bash -c 'cd backend && uv run mypy'
+        language: system
+        pass_filenames: false
+        files: ^backend/

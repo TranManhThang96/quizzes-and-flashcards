@@ -1,0 +1,14 @@
+# secrets and local config
+deploy/.env
+
+# python
+.venv/
+__pycache__/
+*.pyc
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+
+# web (added by the frontend plan)
+node_modules/
+web/dist/
