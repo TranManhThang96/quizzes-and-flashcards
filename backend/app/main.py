@@ -5,6 +5,7 @@ from fastapi import Depends, FastAPI
 from sqlalchemy import text
 from sqlalchemy.ext.asyncio import AsyncSession
 
+from app.admin.users import router as admin_users_router
 from app.auth.deps import require_origin
 from app.auth.router import router as auth_router
 from app.config import Settings
@@ -41,4 +42,5 @@ def create_app(settings: Settings | None = None) -> FastAPI:
         return {"status": "ok"}
 
     app.include_router(auth_router)
+    app.include_router(admin_users_router)
     return app
