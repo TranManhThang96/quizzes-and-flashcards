@@ -1,37 +1,149 @@
 {
   "components": {
     "schemas": {
-      "AnswerIn": {
+      "AttemptItem": {
         "properties": {
-          "grade": {
-            "enum": [
-              "again",
-              "hard",
-              "good",
-              "easy"
+          "answer": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
             ],
-            "title": "Grade",
-            "type": "string"
+            "title": "Answer"
+          },
+          "correct": {
+            "anyOf": [
+              {
+                "type": "boolean"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Correct"
+          },
+          "explanation": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Explanation"
           },
           "item_id": {
             "title": "Item Id",
             "type": "integer"
           },
-          "source": {
-            "default": "study",
-            "enum": [
-              "study",
-              "wrong_queue"
-            ],
-            "title": "Source",
+          "level": {
+            "title": "Level",
             "type": "string"
+          },
+          "options": {
+            "items": {
+              "type": "string"
+            },
+            "title": "Options",
+            "type": "array"
+          },
+          "position": {
+            "title": "Position",
+            "type": "integer"
+          },
+          "prompt": {
+            "title": "Prompt",
+            "type": "string"
+          },
+          "question_type": {
+            "title": "Question Type",
+            "type": "string"
+          },
+          "saved_answer": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Saved Answer"
+          },
+          "topic_id": {
+            "title": "Topic Id",
+            "type": "integer"
           }
         },
         "required": [
           "item_id",
-          "grade"
+          "position",
+          "topic_id",
+          "level",
+          "question_type",
+          "prompt",
+          "options",
+          "saved_answer",
+          "correct",
+          "answer",
+          "explanation"
         ],
-        "title": "AnswerIn",
+        "title": "AttemptItem",
+        "type": "object"
+      },
+      "AttemptOut": {
+        "properties": {
+          "exam_id": {
+            "title": "Exam Id",
+            "type": "integer"
+          },
+          "id": {
+            "title": "Id",
+            "type": "integer"
+          },
+          "items": {
+            "items": {
+              "$ref": "#/components/schemas/AttemptItem"
+            },
+            "title": "Items",
+            "type": "array"
+          },
+          "score": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Score"
+          },
+          "submitted_at": {
+            "anyOf": [
+              {
+                "format": "date-time",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Submitted At"
+          }
+        },
+        "required": [
+          "id",
+          "exam_id",
+          "submitted_at",
+          "score",
+          "items"
+        ],
+        "title": "AttemptOut",
         "type": "object"
       },
       "BuildLine": {
@@ -86,52 +198,6 @@
           "build_config"
         ],
         "title": "BuildRequest",
-        "type": "object"
-      },
-      "ExamDetail": {
-        "properties": {
-          "build_config": {
-            "items": {
-              "additionalProperties": true,
-              "type": "object"
-            },
-            "title": "Build Config",
-            "type": "array"
-          },
-          "created_at": {
-            "format": "date-time",
-            "title": "Created At",
-            "type": "string"
-          },
-          "id": {
-            "title": "Id",
-            "type": "integer"
-          },
-          "items": {
-            "items": {
-              "$ref": "#/components/schemas/ItemOut"
-            },
-            "title": "Items",
-            "type": "array"
-          },
-          "status": {
-            "title": "Status",
-            "type": "string"
-          },
-          "title": {
-            "title": "Title",
-            "type": "string"
-          }
-        },
-        "required": [
-          "id",
-          "title",
-          "status",
-          "build_config",
-          "created_at",
-          "items"
-        ],
-        "title": "ExamDetail",
         "type": "object"
       },
       "ExamIn": {
@@ -195,34 +261,6 @@
           }
         },
         "title": "ExamPatch",
-        "type": "object"
-      },
-      "ExamSummary": {
-        "properties": {
-          "id": {
-            "title": "Id",
-            "type": "integer"
-          },
-          "item_count": {
-            "title": "Item Count",
-            "type": "integer"
-          },
-          "status": {
-            "title": "Status",
-            "type": "string"
-          },
-          "title": {
-            "title": "Title",
-            "type": "string"
-          }
-        },
-        "required": [
-          "id",
-          "title",
-          "status",
-          "item_count"
-        ],
-        "title": "ExamSummary",
         "type": "object"
       },
       "HTTPValidationError": {
@@ -453,6 +491,52 @@
           "total"
         ],
         "title": "PreviewOut",
+        "type": "object"
+      },
+      "PublicItem": {
+        "properties": {
+          "item_id": {
+            "title": "Item Id",
+            "type": "integer"
+          },
+          "level": {
+            "title": "Level",
+            "type": "string"
+          },
+          "options": {
+            "items": {
+              "type": "string"
+            },
+            "title": "Options",
+            "type": "array"
+          },
+          "position": {
+            "title": "Position",
+            "type": "integer"
+          },
+          "prompt": {
+            "title": "Prompt",
+            "type": "string"
+          },
+          "question_type": {
+            "title": "Question Type",
+            "type": "string"
+          },
+          "topic_id": {
+            "title": "Topic Id",
+            "type": "integer"
+          }
+        },
+        "required": [
+          "item_id",
+          "position",
+          "topic_id",
+          "level",
+          "question_type",
+          "prompt",
+          "options"
+        ],
+        "title": "PublicItem",
         "type": "object"
       },
       "QueueCardOut": {
@@ -824,6 +908,176 @@
         ],
         "title": "ValidationError",
         "type": "object"
+      },
+      "app__admin__exams__ExamDetail": {
+        "properties": {
+          "build_config": {
+            "items": {
+              "additionalProperties": true,
+              "type": "object"
+            },
+            "title": "Build Config",
+            "type": "array"
+          },
+          "created_at": {
+            "format": "date-time",
+            "title": "Created At",
+            "type": "string"
+          },
+          "id": {
+            "title": "Id",
+            "type": "integer"
+          },
+          "items": {
+            "items": {
+              "$ref": "#/components/schemas/ItemOut"
+            },
+            "title": "Items",
+            "type": "array"
+          },
+          "status": {
+            "title": "Status",
+            "type": "string"
+          },
+          "title": {
+            "title": "Title",
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "title",
+          "status",
+          "build_config",
+          "created_at",
+          "items"
+        ],
+        "title": "ExamDetail",
+        "type": "object"
+      },
+      "app__admin__exams__ExamSummary": {
+        "properties": {
+          "id": {
+            "title": "Id",
+            "type": "integer"
+          },
+          "item_count": {
+            "title": "Item Count",
+            "type": "integer"
+          },
+          "status": {
+            "title": "Status",
+            "type": "string"
+          },
+          "title": {
+            "title": "Title",
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "title",
+          "status",
+          "item_count"
+        ],
+        "title": "ExamSummary",
+        "type": "object"
+      },
+      "app__user__exams__AnswerIn": {
+        "properties": {
+          "answer": {
+            "maxLength": 2000,
+            "title": "Answer",
+            "type": "string"
+          }
+        },
+        "required": [
+          "answer"
+        ],
+        "title": "AnswerIn",
+        "type": "object"
+      },
+      "app__user__exams__ExamDetail": {
+        "properties": {
+          "id": {
+            "title": "Id",
+            "type": "integer"
+          },
+          "items": {
+            "items": {
+              "$ref": "#/components/schemas/PublicItem"
+            },
+            "title": "Items",
+            "type": "array"
+          },
+          "title": {
+            "title": "Title",
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "title",
+          "items"
+        ],
+        "title": "ExamDetail",
+        "type": "object"
+      },
+      "app__user__exams__ExamSummary": {
+        "properties": {
+          "id": {
+            "title": "Id",
+            "type": "integer"
+          },
+          "item_count": {
+            "title": "Item Count",
+            "type": "integer"
+          },
+          "title": {
+            "title": "Title",
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "title",
+          "item_count"
+        ],
+        "title": "ExamSummary",
+        "type": "object"
+      },
+      "app__user__study__AnswerIn": {
+        "properties": {
+          "grade": {
+            "enum": [
+              "again",
+              "hard",
+              "good",
+              "easy"
+            ],
+            "title": "Grade",
+            "type": "string"
+          },
+          "item_id": {
+            "title": "Item Id",
+            "type": "integer"
+          },
+          "source": {
+            "default": "study",
+            "enum": [
+              "study",
+              "wrong_queue"
+            ],
+            "title": "Source",
+            "type": "string"
+          }
+        },
+        "required": [
+          "item_id",
+          "grade"
+        ],
+        "title": "AnswerIn",
+        "type": "object"
       }
     }
   },
@@ -860,7 +1114,7 @@
               "application/json": {
                 "schema": {
                   "items": {
-                    "$ref": "#/components/schemas/ExamSummary"
+                    "$ref": "#/components/schemas/app__admin__exams__ExamSummary"
                   },
                   "title": "Response List Exams Api Admin Exams Get",
                   "type": "array"
@@ -902,7 +1156,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/ExamDetail"
+                  "$ref": "#/components/schemas/app__admin__exams__ExamDetail"
                 }
               }
             },
@@ -1018,7 +1272,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/ExamDetail"
+                  "$ref": "#/components/schemas/app__admin__exams__ExamDetail"
                 }
               }
             },
@@ -1068,7 +1322,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/ExamDetail"
+                  "$ref": "#/components/schemas/app__admin__exams__ExamDetail"
                 }
               }
             },
@@ -1110,7 +1364,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/ExamDetail"
+                  "$ref": "#/components/schemas/app__admin__exams__ExamDetail"
                 }
               }
             },
@@ -1152,7 +1406,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/ExamDetail"
+                  "$ref": "#/components/schemas/app__admin__exams__ExamDetail"
                 }
               }
             },
@@ -1795,6 +2049,144 @@
         ]
       }
     },
+    "/api/attempts/{attempt_id}": {
+      "get": {
+        "operationId": "get_attempt_api_attempts__attempt_id__get",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "attempt_id",
+            "required": true,
+            "schema": {
+              "title": "Attempt Id",
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AttemptOut"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Get Attempt",
+        "tags": [
+          "exams"
+        ]
+      }
+    },
+    "/api/attempts/{attempt_id}/answers/{item_id}": {
+      "put": {
+        "operationId": "save_answer_api_attempts__attempt_id__answers__item_id__put",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "attempt_id",
+            "required": true,
+            "schema": {
+              "title": "Attempt Id",
+              "type": "integer"
+            }
+          },
+          {
+            "in": "path",
+            "name": "item_id",
+            "required": true,
+            "schema": {
+              "title": "Item Id",
+              "type": "integer"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/app__user__exams__AnswerIn"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "204": {
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Save Answer",
+        "tags": [
+          "exams"
+        ]
+      }
+    },
+    "/api/attempts/{attempt_id}/submit": {
+      "post": {
+        "operationId": "submit_attempt_api_attempts__attempt_id__submit_post",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "attempt_id",
+            "required": true,
+            "schema": {
+              "title": "Attempt Id",
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AttemptOut"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Submit Attempt",
+        "tags": [
+          "exams"
+        ]
+      }
+    },
     "/api/auth/login": {
       "post": {
         "operationId": "login_api_auth_login_post",
@@ -1871,6 +2263,115 @@
         ]
       }
     },
+    "/api/exams": {
+      "get": {
+        "operationId": "list_exams_api_exams_get",
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": {
+                    "$ref": "#/components/schemas/app__user__exams__ExamSummary"
+                  },
+                  "title": "Response List Exams Api Exams Get",
+                  "type": "array"
+                }
+              }
+            },
+            "description": "Successful Response"
+          }
+        },
+        "summary": "List Exams",
+        "tags": [
+          "exams"
+        ]
+      }
+    },
+    "/api/exams/{exam_id}": {
+      "get": {
+        "operationId": "get_exam_api_exams__exam_id__get",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "exam_id",
+            "required": true,
+            "schema": {
+              "title": "Exam Id",
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/app__user__exams__ExamDetail"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Get Exam",
+        "tags": [
+          "exams"
+        ]
+      }
+    },
+    "/api/exams/{exam_id}/attempts": {
+      "post": {
+        "operationId": "start_attempt_api_exams__exam_id__attempts_post",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "exam_id",
+            "required": true,
+            "schema": {
+              "title": "Exam Id",
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "201": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AttemptOut"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Start Attempt",
+        "tags": [
+          "exams"
+        ]
+      }
+    },
     "/api/health": {
       "get": {
         "operationId": "health_api_health_get",
@@ -1903,7 +2404,7 @@
           "content": {
             "application/json": {
               "schema": {
-                "$ref": "#/components/schemas/AnswerIn"
+                "$ref": "#/components/schemas/app__user__study__AnswerIn"
               }
             }
           },
