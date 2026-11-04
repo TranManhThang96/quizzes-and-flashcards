@@ -5,6 +5,7 @@ from fastapi import Depends, FastAPI
 from sqlalchemy import text
 from sqlalchemy.ext.asyncio import AsyncSession
 
+from app.admin.topics import router as admin_topics_router
 from app.admin.users import router as admin_users_router
 from app.auth.deps import require_origin
 from app.auth.router import router as auth_router
@@ -43,4 +44,5 @@ def create_app(settings: Settings | None = None) -> FastAPI:
 
     app.include_router(auth_router)
     app.include_router(admin_users_router)
+    app.include_router(admin_topics_router)
     return app
