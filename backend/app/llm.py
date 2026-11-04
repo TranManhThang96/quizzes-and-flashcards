@@ -156,7 +156,7 @@ def validate_response(
             continue
         level = entry.get("level")
         content = entry.get("content")
-        if level not in counts:
+        if not isinstance(level, str) or level not in counts:
             errors.append(f"items[{index}].level {level!r} không có trong yêu cầu")
             continue
         if not isinstance(content, dict):
@@ -189,24 +189,28 @@ async def generate_chunk(
     chunk: str,
     counts: dict[str, int],
 ) -> list[dict[str, Any]]:
-    """Sinh item cho một chunk; sai schema thì retry một lần kèm lỗi cụ thể."""
+    """Sinh item cho một chunk; đầu ra không dùng được thì retry một lần kèm lỗi."""
     messages = build_messages(
         kind=kind, topic_name=topic_name, chunk=chunk, counts=counts
     )
-    data = await llm(messages)
+    first: dict[str, Any] | None = None
     try:
-        return validate_response(kind, data, counts)
+        first = await llm(messages)
+        return validate_response(kind, first, counts)
     except LlmOutputError as exc:
-        retry_messages: list[ChatCompletionMessageParam] = [
-            *messages,
-            {"role": "assistant", "content": json.dumps(data, ensure_ascii=False)},
+        retry_messages: list[ChatCompletionMessageParam] = list(messages)
+        if first is not None:
+            retry_messages.append(
+                {"role": "assistant", "content": json.dumps(first, ensure_ascii=False)}
+            )
+        retry_messages.append(
             {
                 "role": "user",
                 "content": (
                     f"Đầu ra trên sai: {exc}. Trả lại đúng object JSON theo schema, "
                     "không thêm chữ nào khác."
                 ),
-            },
-        ]
+            }
+        )
         second = await llm(retry_messages)
         return validate_response(kind, second, counts)

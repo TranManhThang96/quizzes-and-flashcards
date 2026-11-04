@@ -3,6 +3,7 @@
 import re
 
 _WHITESPACE = re.compile(r"\s+")
+_WHITESPACE_CHARS = " \t\n\r\f\v"
 
 
 def normalize(text: str) -> str:
@@ -14,7 +15,8 @@ def _split_long(paragraph: str, size: int) -> list[str]:
     pieces: list[str] = []
     rest = paragraph.strip()
     while len(rest) > size:
-        cut = rest.rfind(" ", 0, size)
+        window = rest[:size]
+        cut = max(window.rfind(char) for char in _WHITESPACE_CHARS)
         if cut <= 0:
             cut = size
         pieces.append(rest[:cut].strip())

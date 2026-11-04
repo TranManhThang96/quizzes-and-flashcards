@@ -24,6 +24,35 @@ def test_a_paragraph_longer_than_the_size_is_split_at_word_boundaries():
     assert "".join(chunks).replace(" ", "") == "từ" * 500
 
 
+def test_newline_separated_words_are_not_split_mid_word():
+    text = "apple\nbanana\ncherry\n" * 20
+
+    chunks = chunk_text(text, 50)
+
+    assert all(len(chunk) <= 50 for chunk in chunks)
+    assert "".join("".join(chunk.split()) for chunk in chunks) == (
+        "applebananacherry" * 20
+    )
+    assert {word for chunk in chunks for word in chunk.split()} == {
+        "apple",
+        "banana",
+        "cherry",
+    }
+
+
+def test_tab_separated_words_are_not_split_mid_word():
+    text = "apple\tbanana\tcherry\t" * 20
+
+    chunks = chunk_text(text, 50)
+
+    assert all(len(chunk) <= 50 for chunk in chunks)
+    assert {word for chunk in chunks for word in chunk.split()} == {
+        "apple",
+        "banana",
+        "cherry",
+    }
+
+
 def test_short_text_is_one_chunk():
     assert chunk_text("một đoạn ngắn", 8000) == ["một đoạn ngắn"]
 

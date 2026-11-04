@@ -48,6 +48,13 @@ def test_content_failing_the_schema_is_an_error():
     assert "items[0]" in str(excinfo.value)
 
 
+def test_a_non_string_level_is_an_output_error_not_a_type_error():
+    data = batch({"level": ["easy"], "content": {"front": "a", "back": "b"}})
+
+    with pytest.raises(LlmOutputError):
+        validate_response("flashcard", data, COUNTS)
+
+
 def test_missing_items_key_is_an_error():
     with pytest.raises(LlmOutputError):
         validate_response("flashcard", {"results": []}, COUNTS)
@@ -79,6 +86,50 @@ async def test_invalid_output_is_retried_once_with_the_validation_error():
 async def test_two_invalid_answers_fail_the_chunk():
     bad = batch({"level": "easy", "content": {"front": "", "back": "x"}})
     llm = FakeLlm([bad, bad])
+
+    with pytest.raises(LlmOutputError):
+        await generate_chunk(
+            llm, kind="flashcard", topic_name="Tài chính", chunk="nguồn", counts=COUNTS
+        )
+
+    assert len(llm.calls) == 2
+
+
+async def test_a_non_string_level_is_retried_instead_of_raising_type_error():
+    llm = FakeLlm(
+        [
+            batch({"level": ["easy"], "content": {"front": "a", "back": "b"}}),
+            batch(flashcard("easy", "Lãi kép là gì?")),
+        ]
+    )
+
+    items = await generate_chunk(
+        llm, kind="flashcard", topic_name="Tài chính", chunk="nguồn", counts=COUNTS
+    )
+
+    assert len(items) == 1
+    assert len(llm.calls) == 2
+
+
+async def test_a_non_json_first_reply_is_retried_once():
+    llm = FakeLlm(
+        [
+            LlmOutputError("LLM không trả JSON hợp lệ"),
+            batch(flashcard("easy", "Lãi kép là gì?")),
+        ]
+    )
+
+    items = await generate_chunk(
+        llm, kind="flashcard", topic_name="Tài chính", chunk="nguồn", counts=COUNTS
+    )
+
+    assert len(items) == 1
+    assert len(llm.calls) == 2
+    assert "sai" in llm.calls[1][-1]["content"]
+
+
+async def test_two_non_json_replies_fail_after_one_retry():
+    llm = FakeLlm([LlmOutputError("lần một"), LlmOutputError("lần hai")])
 
     with pytest.raises(LlmOutputError):
         await generate_chunk(
