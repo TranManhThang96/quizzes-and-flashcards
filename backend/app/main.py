@@ -12,6 +12,7 @@ from app.auth.deps import require_origin
 from app.auth.router import router as auth_router
 from app.config import Settings
 from app.db import get_db, make_engine, make_sessionmaker
+from app.user.study import router as user_study_router
 from app.user.topics import router as user_topics_router
 
 
@@ -49,4 +50,5 @@ def create_app(settings: Settings | None = None) -> FastAPI:
     app.include_router(admin_topics_router)
     app.include_router(admin_items_router)
     app.include_router(user_topics_router)
+    app.include_router(user_study_router)
     return app

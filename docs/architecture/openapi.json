@@ -1,6 +1,39 @@
 {
   "components": {
     "schemas": {
+      "AnswerIn": {
+        "properties": {
+          "grade": {
+            "enum": [
+              "again",
+              "hard",
+              "good",
+              "easy"
+            ],
+            "title": "Grade",
+            "type": "string"
+          },
+          "item_id": {
+            "title": "Item Id",
+            "type": "integer"
+          },
+          "source": {
+            "default": "study",
+            "enum": [
+              "study",
+              "wrong_queue"
+            ],
+            "title": "Source",
+            "type": "string"
+          }
+        },
+        "required": [
+          "item_id",
+          "grade"
+        ],
+        "title": "AnswerIn",
+        "type": "object"
+      },
       "HTTPValidationError": {
         "properties": {
           "detail": {
@@ -164,6 +197,45 @@
           "password"
         ],
         "title": "LoginIn",
+        "type": "object"
+      },
+      "ReviewStateOut": {
+        "properties": {
+          "due_at": {
+            "format": "date-time",
+            "title": "Due At",
+            "type": "string"
+          },
+          "ease": {
+            "title": "Ease",
+            "type": "number"
+          },
+          "interval_days": {
+            "title": "Interval Days",
+            "type": "integer"
+          },
+          "item_id": {
+            "title": "Item Id",
+            "type": "integer"
+          },
+          "lapses": {
+            "title": "Lapses",
+            "type": "integer"
+          },
+          "reps": {
+            "title": "Reps",
+            "type": "integer"
+          }
+        },
+        "required": [
+          "item_id",
+          "due_at",
+          "interval_days",
+          "ease",
+          "reps",
+          "lapses"
+        ],
+        "title": "ReviewStateOut",
         "type": "object"
       },
       "TopicCard": {
@@ -1133,6 +1205,47 @@
         "summary": "Health",
         "tags": [
           "ops"
+        ]
+      }
+    },
+    "/api/review/answer": {
+      "post": {
+        "operationId": "answer_api_review_answer_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/AnswerIn"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ReviewStateOut"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Answer",
+        "tags": [
+          "study"
         ]
       }
     },
