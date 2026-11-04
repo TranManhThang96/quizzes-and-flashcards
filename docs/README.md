@@ -21,3 +21,9 @@ Thư mục nào chưa có thì tạo khi có tài liệu đầu tiên.
 ## Mục lục
 
 - [Triển khai](architecture/deploy.md)
+- [SRS](architecture/srs.md)
+- [Design spec](specs/2026-11-02-quizzes-and-flashcards-design.md)
+- [Plan 1: nền tảng backend](plans/2026-11-02-foundation-backend.md)
+- [Plan 2: chủ đề, item, SRS, ôn tập, đề](plans/2026-11-03-topics-items-srs-exams.md)
+- [Plan 3: pipeline nội dung AI](plans/2026-11-03-ai-content-pipeline.md)
+- [Plan 4: SPA React và PWA](plans/2026-11-03-spa-pwa-frontend.md)
