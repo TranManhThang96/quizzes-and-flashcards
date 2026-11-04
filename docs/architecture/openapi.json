@@ -34,6 +34,197 @@
         "title": "AnswerIn",
         "type": "object"
       },
+      "BuildLine": {
+        "properties": {
+          "count": {
+            "maximum": 200.0,
+            "minimum": 1.0,
+            "title": "Count",
+            "type": "integer"
+          },
+          "level": {
+            "enum": [
+              "easy",
+              "medium",
+              "hard",
+              "expert"
+            ],
+            "title": "Level",
+            "type": "string"
+          },
+          "topic_id": {
+            "title": "Topic Id",
+            "type": "integer"
+          }
+        },
+        "required": [
+          "topic_id",
+          "level",
+          "count"
+        ],
+        "title": "BuildLine",
+        "type": "object"
+      },
+      "BuildRequest": {
+        "properties": {
+          "build_config": {
+            "items": {
+              "$ref": "#/components/schemas/BuildLine"
+            },
+            "maxItems": 50,
+            "minItems": 1,
+            "title": "Build Config",
+            "type": "array"
+          },
+          "prefer_weak": {
+            "default": false,
+            "title": "Prefer Weak",
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "build_config"
+        ],
+        "title": "BuildRequest",
+        "type": "object"
+      },
+      "ExamDetail": {
+        "properties": {
+          "build_config": {
+            "items": {
+              "additionalProperties": true,
+              "type": "object"
+            },
+            "title": "Build Config",
+            "type": "array"
+          },
+          "created_at": {
+            "format": "date-time",
+            "title": "Created At",
+            "type": "string"
+          },
+          "id": {
+            "title": "Id",
+            "type": "integer"
+          },
+          "items": {
+            "items": {
+              "$ref": "#/components/schemas/ItemOut"
+            },
+            "title": "Items",
+            "type": "array"
+          },
+          "status": {
+            "title": "Status",
+            "type": "string"
+          },
+          "title": {
+            "title": "Title",
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "title",
+          "status",
+          "build_config",
+          "created_at",
+          "items"
+        ],
+        "title": "ExamDetail",
+        "type": "object"
+      },
+      "ExamIn": {
+        "properties": {
+          "build_config": {
+            "items": {
+              "$ref": "#/components/schemas/BuildLine"
+            },
+            "maxItems": 50,
+            "minItems": 1,
+            "title": "Build Config",
+            "type": "array"
+          },
+          "prefer_weak": {
+            "default": false,
+            "title": "Prefer Weak",
+            "type": "boolean"
+          },
+          "title": {
+            "maxLength": 200,
+            "minLength": 1,
+            "title": "Title",
+            "type": "string"
+          }
+        },
+        "required": [
+          "build_config",
+          "title"
+        ],
+        "title": "ExamIn",
+        "type": "object"
+      },
+      "ExamPatch": {
+        "properties": {
+          "item_ids": {
+            "anyOf": [
+              {
+                "items": {
+                  "type": "integer"
+                },
+                "type": "array"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Item Ids"
+          },
+          "title": {
+            "anyOf": [
+              {
+                "maxLength": 200,
+                "minLength": 1,
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Title"
+          }
+        },
+        "title": "ExamPatch",
+        "type": "object"
+      },
+      "ExamSummary": {
+        "properties": {
+          "id": {
+            "title": "Id",
+            "type": "integer"
+          },
+          "item_count": {
+            "title": "Item Count",
+            "type": "integer"
+          },
+          "status": {
+            "title": "Status",
+            "type": "string"
+          },
+          "title": {
+            "title": "Title",
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "title",
+          "status",
+          "item_count"
+        ],
+        "title": "ExamSummary",
+        "type": "object"
+      },
       "HTTPValidationError": {
         "properties": {
           "detail": {
@@ -178,6 +369,42 @@
         "title": "ItemPatch",
         "type": "object"
       },
+      "LineOut": {
+        "properties": {
+          "available": {
+            "title": "Available",
+            "type": "integer"
+          },
+          "level": {
+            "title": "Level",
+            "type": "string"
+          },
+          "requested": {
+            "title": "Requested",
+            "type": "integer"
+          },
+          "selected_ids": {
+            "items": {
+              "type": "integer"
+            },
+            "title": "Selected Ids",
+            "type": "array"
+          },
+          "topic_id": {
+            "title": "Topic Id",
+            "type": "integer"
+          }
+        },
+        "required": [
+          "topic_id",
+          "level",
+          "requested",
+          "available",
+          "selected_ids"
+        ],
+        "title": "LineOut",
+        "type": "object"
+      },
       "LoginIn": {
         "properties": {
           "password": {
@@ -197,6 +424,35 @@
           "password"
         ],
         "title": "LoginIn",
+        "type": "object"
+      },
+      "PreviewOut": {
+        "properties": {
+          "items": {
+            "items": {
+              "$ref": "#/components/schemas/ItemOut"
+            },
+            "title": "Items",
+            "type": "array"
+          },
+          "lines": {
+            "items": {
+              "$ref": "#/components/schemas/LineOut"
+            },
+            "title": "Lines",
+            "type": "array"
+          },
+          "total": {
+            "title": "Total",
+            "type": "integer"
+          }
+        },
+        "required": [
+          "items",
+          "lines",
+          "total"
+        ],
+        "title": "PreviewOut",
         "type": "object"
       },
       "QueueCardOut": {
@@ -577,6 +833,348 @@
   },
   "openapi": "3.1.0",
   "paths": {
+    "/api/admin/exams": {
+      "get": {
+        "operationId": "list_exams_api_admin_exams_get",
+        "parameters": [
+          {
+            "in": "query",
+            "name": "status",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Status"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": {
+                    "$ref": "#/components/schemas/ExamSummary"
+                  },
+                  "title": "Response List Exams Api Admin Exams Get",
+                  "type": "array"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "List Exams",
+        "tags": [
+          "admin"
+        ]
+      },
+      "post": {
+        "operationId": "create_exam_api_admin_exams_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ExamIn"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ExamDetail"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Create Exam",
+        "tags": [
+          "admin"
+        ]
+      }
+    },
+    "/api/admin/exams/preview": {
+      "post": {
+        "operationId": "preview_exam_api_admin_exams_preview_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/BuildRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PreviewOut"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Preview Exam",
+        "tags": [
+          "admin"
+        ]
+      }
+    },
+    "/api/admin/exams/{exam_id}": {
+      "delete": {
+        "operationId": "delete_exam_api_admin_exams__exam_id__delete",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "exam_id",
+            "required": true,
+            "schema": {
+              "title": "Exam Id",
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Delete Exam",
+        "tags": [
+          "admin"
+        ]
+      },
+      "get": {
+        "operationId": "get_exam_api_admin_exams__exam_id__get",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "exam_id",
+            "required": true,
+            "schema": {
+              "title": "Exam Id",
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ExamDetail"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Get Exam",
+        "tags": [
+          "admin"
+        ]
+      },
+      "patch": {
+        "operationId": "patch_exam_api_admin_exams__exam_id__patch",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "exam_id",
+            "required": true,
+            "schema": {
+              "title": "Exam Id",
+              "type": "integer"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ExamPatch"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ExamDetail"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Patch Exam",
+        "tags": [
+          "admin"
+        ]
+      }
+    },
+    "/api/admin/exams/{exam_id}/archive": {
+      "post": {
+        "operationId": "archive_exam_api_admin_exams__exam_id__archive_post",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "exam_id",
+            "required": true,
+            "schema": {
+              "title": "Exam Id",
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ExamDetail"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Archive Exam",
+        "tags": [
+          "admin"
+        ]
+      }
+    },
+    "/api/admin/exams/{exam_id}/publish": {
+      "post": {
+        "operationId": "publish_exam_api_admin_exams__exam_id__publish_post",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "exam_id",
+            "required": true,
+            "schema": {
+              "title": "Exam Id",
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ExamDetail"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Publish Exam",
+        "tags": [
+          "admin"
+        ]
+      }
+    },
     "/api/admin/items": {
       "get": {
         "operationId": "list_items_api_admin_items_get",

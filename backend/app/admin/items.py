@@ -3,7 +3,7 @@ from typing import Any
 
 from fastapi import APIRouter, Depends, HTTPException, Query
 from pydantic import BaseModel, ConfigDict, ValidationError
-from sqlalchemy import select
+from sqlalchemy import func, select
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.ext.asyncio import AsyncSession
 
@@ -17,7 +17,7 @@ from app.content import (
     parse_content,
 )
 from app.db import get_db
-from app.models import Item, Topic
+from app.models import Exam, ExamItem, Item, Topic
 
 router = APIRouter(
     prefix="/api/admin/items", tags=["admin"], dependencies=[Depends(require_admin)]
@@ -71,6 +71,18 @@ async def _get_item(db: AsyncSession, item_id: int) -> Item:
     if item is None:
         raise HTTPException(status_code=404, detail="Item not found")
     return item
+
+
+async def _answer_is_locked(db: AsyncSession, item: Item) -> bool:
+    if item.kind != "question":
+        return False
+    stmt = (
+        select(func.count())
+        .select_from(ExamItem)
+        .join(Exam, Exam.id == ExamItem.exam_id)
+        .where(ExamItem.item_id == item.id, Exam.status == "published")
+    )
+    return (await db.execute(stmt)).scalar_one() > 0
 
 
 @router.get("", response_model=list[ItemOut])
@@ -133,7 +145,16 @@ async def patch_item(
         item.level = body.level
     if body.content is not None:
         parsed = _validated(item.kind, body.content)
-        item.content = parsed.model_dump()
+        new_content = parsed.model_dump()
+        if (
+            item.kind == "question"
+            and new_content.get("answer") != item.content.get("answer")
+            and await _answer_is_locked(db, item)
+        ):
+            raise HTTPException(
+                status_code=409, detail="The answer is locked by a published exam"
+            )
+        item.content = new_content
         item.content_hash = content_hash(item.kind, parsed)
     try:
         await db.flush()
