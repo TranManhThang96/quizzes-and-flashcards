@@ -1,5 +1,6 @@
 from datetime import datetime
 
+from sqlalchemy import func, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.models import Item, ReviewLog, ReviewState
@@ -16,6 +17,12 @@ async def apply_review(
     now: datetime,
 ) -> ReviewState:
     """Update one review state and append the log. The caller commits."""
+    # Two answers for the same card (a double tap, or the exam and study
+    # screens at once) would otherwise both insert a missing row, or both
+    # read the same old values and lose one transition. The lock is released
+    # when the caller commits.
+    await db.execute(select(func.pg_advisory_xact_lock(user_id, item_id)))
+
     item = await db.get(Item, item_id)
     if item is None:
         raise LookupError(item_id)

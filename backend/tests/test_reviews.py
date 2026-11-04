@@ -1,3 +1,4 @@
+import asyncio
 from datetime import timedelta
 
 from sqlalchemy import select
@@ -129,3 +130,30 @@ async def test_answering_requires_login(client, make_topic, make_item):
     )
 
     assert resp.status_code == 401
+
+
+async def test_simultaneous_answers_for_a_new_item_all_succeed(
+    client, app, make_user, make_topic, make_item
+):
+    await make_user("alice", "correct-horse")
+    topic = await make_topic("Toán")
+    item = await make_item(topic.id, status="published")
+    await client.post(
+        "/api/auth/login", json={"username": "alice", "password": "correct-horse"}
+    )
+
+    responses = await asyncio.gather(
+        *(
+            client.post(
+                "/api/review/answer", json={"item_id": item.id, "grade": "good"}
+            )
+            for _ in range(4)
+        )
+    )
+
+    assert [r.status_code for r in responses] == [200, 200, 200, 200]
+    async with app.state.sessionmaker() as s:
+        states = list((await s.execute(select(ReviewState))).scalars())
+        logs = list((await s.execute(select(ReviewLog))).scalars())
+    assert len(states) == 1 and len(logs) == 4
+    assert states[0].reps == 4
