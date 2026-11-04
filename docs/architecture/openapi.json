@@ -199,6 +199,63 @@
         "title": "LoginIn",
         "type": "object"
       },
+      "QueueCardOut": {
+        "properties": {
+          "content": {
+            "additionalProperties": true,
+            "title": "Content",
+            "type": "object"
+          },
+          "due_at": {
+            "anyOf": [
+              {
+                "format": "date-time",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Due At"
+          },
+          "is_new": {
+            "title": "Is New",
+            "type": "boolean"
+          },
+          "item_id": {
+            "title": "Item Id",
+            "type": "integer"
+          },
+          "kind": {
+            "title": "Kind",
+            "type": "string"
+          },
+          "level": {
+            "title": "Level",
+            "type": "string"
+          },
+          "topic_id": {
+            "title": "Topic Id",
+            "type": "integer"
+          },
+          "topic_name": {
+            "title": "Topic Name",
+            "type": "string"
+          }
+        },
+        "required": [
+          "item_id",
+          "topic_id",
+          "topic_name",
+          "kind",
+          "level",
+          "content",
+          "is_new",
+          "due_at"
+        ],
+        "title": "QueueCardOut",
+        "type": "object"
+      },
       "ReviewStateOut": {
         "properties": {
           "due_at": {
@@ -236,6 +293,39 @@
           "lapses"
         ],
         "title": "ReviewStateOut",
+        "type": "object"
+      },
+      "StatsOut": {
+        "properties": {
+          "accuracy_7d": {
+            "title": "Accuracy 7D",
+            "type": "number"
+          },
+          "due_today": {
+            "title": "Due Today",
+            "type": "integer"
+          },
+          "new_remaining": {
+            "title": "New Remaining",
+            "type": "integer"
+          },
+          "reviews_today": {
+            "title": "Reviews Today",
+            "type": "integer"
+          },
+          "streak_days": {
+            "title": "Streak Days",
+            "type": "integer"
+          }
+        },
+        "required": [
+          "due_today",
+          "new_remaining",
+          "reviews_today",
+          "accuracy_7d",
+          "streak_days"
+        ],
+        "title": "StatsOut",
         "type": "object"
       },
       "TopicCard": {
@@ -1244,6 +1334,163 @@
           }
         },
         "summary": "Answer",
+        "tags": [
+          "study"
+        ]
+      }
+    },
+    "/api/review/wrong": {
+      "get": {
+        "operationId": "wrong_api_review_wrong_get",
+        "parameters": [
+          {
+            "in": "query",
+            "name": "limit",
+            "required": false,
+            "schema": {
+              "default": 30,
+              "maximum": 100,
+              "minimum": 1,
+              "title": "Limit",
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": {
+                    "$ref": "#/components/schemas/QueueCardOut"
+                  },
+                  "title": "Response Wrong Api Review Wrong Get",
+                  "type": "array"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Wrong",
+        "tags": [
+          "study"
+        ]
+      }
+    },
+    "/api/stats": {
+      "get": {
+        "operationId": "get_stats_api_stats_get",
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/StatsOut"
+                }
+              }
+            },
+            "description": "Successful Response"
+          }
+        },
+        "summary": "Get Stats",
+        "tags": [
+          "study"
+        ]
+      }
+    },
+    "/api/study/queue": {
+      "get": {
+        "operationId": "queue_api_study_queue_get",
+        "parameters": [
+          {
+            "in": "query",
+            "name": "limit",
+            "required": false,
+            "schema": {
+              "default": 30,
+              "maximum": 100,
+              "minimum": 1,
+              "title": "Limit",
+              "type": "integer"
+            }
+          },
+          {
+            "in": "query",
+            "name": "topic_id",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "integer"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Topic Id"
+            }
+          },
+          {
+            "in": "query",
+            "name": "level",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "enum": [
+                    "easy",
+                    "medium",
+                    "hard",
+                    "expert"
+                  ],
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Level"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": {
+                    "$ref": "#/components/schemas/QueueCardOut"
+                  },
+                  "title": "Response Queue Api Study Queue Get",
+                  "type": "array"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Queue",
         "tags": [
           "study"
         ]
