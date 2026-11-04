@@ -15,7 +15,7 @@ from sqlalchemy.engine import make_url
 from app.config import Settings
 from app.content import content_hash, parse_content
 from app.main import create_app
-from app.models import Item, Topic, User
+from app.models import GenerationJob, Item, Source, Topic, User
 from app.text import slugify
 from app.users import create_user
 
@@ -174,5 +174,66 @@ async def make_item(app: FastAPI) -> Callable[..., Awaitable[Item]]:
             session.add(item)
             await session.commit()
             return item
+
+    return _make
+
+
+@pytest_asyncio.fixture
+async def make_source(app: FastAPI) -> Callable[..., Awaitable[Source]]:
+    async def _make(
+        *,
+        text: str = "Lãi kép là lãi tính trên cả gốc lẫn lãi đã cộng dồn.",
+        kind: str = "text",
+        url: str | None = None,
+        user_id: int | None = None,
+    ) -> Source:
+        async with app.state.sessionmaker() as session:
+            if user_id is None:
+                # Nguồn luôn có người tạo; tạo user riêng để test không phụ
+                # thuộc vào việc đã đăng nhập hay chưa.
+                user = await create_user(
+                    session,
+                    username=f"author-{uuid4().hex[:8]}",
+                    password="author-password",
+                    role="admin",
+                )
+                await session.flush()
+                user_id = user.id
+            source = Source(kind=kind, text=text, url=url, created_by=user_id)
+            session.add(source)
+            await session.commit()
+            return source
+
+    return _make
+
+
+@pytest_asyncio.fixture
+async def make_job(app: FastAPI) -> Callable[..., Awaitable[GenerationJob]]:
+    async def _make(
+        *,
+        source_id: int,
+        topic_id: int,
+        params: dict | None = None,
+        status: str = "queued",
+    ) -> GenerationJob:
+        async with app.state.sessionmaker() as session:
+            user = await create_user(
+                session,
+                username=f"job-{uuid4().hex[:8]}",
+                password="job-password",
+                role="admin",
+            )
+            await session.flush()
+            job = GenerationJob(
+                source_id=source_id,
+                topic_id=topic_id,
+                params=params
+                or {"kind": "flashcard", "levels": [{"level": "easy", "count": 1}]},
+                status=status,
+                created_by=user.id,
+            )
+            session.add(job)
+            await session.commit()
+            return job
 
     return _make

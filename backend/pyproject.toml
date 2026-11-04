@@ -12,11 +12,15 @@ dependencies = [
     "pydantic==2.14.2",
     "pydantic-settings==2.16.2",
     "pwdlib[argon2]==0.3.1",
+    "openai==3.42.1",
+    "pypdf==6.21.4",
+    "trafilatura==2.3.1",
+    "python-multipart==0.0.33",
+    "httpx==0.28.1",
 ]
 
 [dependency-groups]
 dev = [
-    "httpx==0.28.1",
     "mypy==2.4.1",
     "pre-commit==4.7.0",
     "pytest==9.2.0",
