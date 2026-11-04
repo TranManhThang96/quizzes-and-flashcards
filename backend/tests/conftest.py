@@ -1,6 +1,7 @@
 import os
 from collections.abc import AsyncIterator, Awaitable, Callable
 from pathlib import Path
+from uuid import uuid4
 
 import psycopg
 import pytest
@@ -12,8 +13,10 @@ from httpx import ASGITransport, AsyncClient, Response
 from sqlalchemy.engine import make_url
 
 from app.config import Settings
+from app.content import content_hash, parse_content
 from app.main import create_app
-from app.models import User
+from app.models import Item, Topic, User
+from app.text import slugify
 from app.users import create_user
 
 TEST_DB_URL = os.environ.get(
@@ -113,3 +116,63 @@ async def login(client: AsyncClient, username: str, password: str) -> Response:
     return await client.post(
         "/api/auth/login", json={"username": username, "password": password}
     )
+
+
+@pytest_asyncio.fixture
+async def make_topic(app: FastAPI) -> Callable[..., Awaitable[Topic]]:
+    async def _make(name: str = "Topic") -> Topic:
+        async with app.state.sessionmaker() as session:
+            topic = Topic(name=name, slug=f"{slugify(name)}-{uuid4().hex[:8]}")
+            session.add(topic)
+            await session.commit()
+            return topic
+
+    return _make
+
+
+@pytest_asyncio.fixture
+async def make_item(app: FastAPI) -> Callable[..., Awaitable[Item]]:
+    async def _make(
+        topic_id: int,
+        *,
+        kind: str = "flashcard",
+        level: str = "easy",
+        content: dict | None = None,
+        status: str = "draft",
+    ) -> Item:
+        if content is None:
+            # Unique per call: item content is unique per topic, so identical
+            # defaults would collide as soon as a test creates two items.
+            token = uuid4().hex[:8]
+            content = {
+                "flashcard": {"front": f"Front {token}", "back": "Back"},
+                "vocab": {
+                    "word": f"word-{token}",
+                    "part_of_speech": "noun",
+                    "meaning": "nghĩa",
+                    "ipa": "",
+                    "examples": [],
+                },
+                "question": {
+                    "type": "mcq",
+                    "prompt": f"2 + 2? ({token})",
+                    "options": ["3", "4"],
+                    "answer": "4",
+                    "explanation": "Bốn",
+                },
+            }[kind]
+        parsed = parse_content(kind, content)
+        async with app.state.sessionmaker() as session:
+            item = Item(
+                topic_id=topic_id,
+                kind=kind,
+                level=level,
+                content=parsed.model_dump(),
+                content_hash=content_hash(kind, parsed),
+                status=status,
+            )
+            session.add(item)
+            await session.commit()
+            return item
+
+    return _make

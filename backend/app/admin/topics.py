@@ -1,12 +1,12 @@
-from fastapi import APIRouter, Depends, HTTPException
+from fastapi import APIRouter, Depends, HTTPException, Response
 from pydantic import BaseModel, ConfigDict, Field, field_validator
-from sqlalchemy import select
+from sqlalchemy import func, select
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.auth.deps import require_admin
 from app.db import get_db
-from app.models import Topic
+from app.models import Item, Topic
 from app.text import normalize_ws, slugify
 
 router = APIRouter(
@@ -79,3 +79,20 @@ async def rename_topic(
     topic.name = body.name
     await db.commit()
     return topic
+
+
+@router.delete("/{topic_id}", status_code=204)
+async def delete_topic(topic_id: int, db: AsyncSession = Depends(get_db)) -> Response:
+    topic = await db.get(Topic, topic_id)
+    if topic is None:
+        raise HTTPException(status_code=404, detail="Topic not found")
+    count = (
+        await db.execute(
+            select(func.count()).select_from(Item).where(Item.topic_id == topic_id)
+        )
+    ).scalar_one()
+    if count:
+        raise HTTPException(status_code=409, detail="Topic still has items")
+    await db.delete(topic)
+    await db.commit()
+    return Response(status_code=204)
