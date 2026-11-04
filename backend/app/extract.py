@@ -114,12 +114,29 @@ class PinnedTarget:
     host_header: str
 
 
+# NAT64 prefixes nhúng một địa chỉ IPv4 mà stack nội bộ dịch ngược lại, nên
+# 64:ff9b::a9fe:a9fe thực chất là 169.254.169.254; is_global không bắt được.
+_NAT64_NETWORKS = (
+    ipaddress.IPv6Network("64:ff9b::/96"),
+    ipaddress.IPv6Network("64:ff9b:1::/48"),
+)
+
+
 def _is_public(ip: ipaddress.IPv4Address | ipaddress.IPv6Address) -> bool:
     mapped = getattr(ip, "ipv4_mapped", None)
     if mapped is not None:
         ip = mapped
-    # is_global loại trừ loopback, private, link-local, reserved và multicast.
-    return ip.is_global and not ip.is_multicast
+    # is_global loại trừ loopback, private, link-local và multicast.
+    if not ip.is_global or ip.is_multicast:
+        return False
+    if isinstance(ip, ipaddress.IPv6Address):
+        # is_global bỏ sót khối reserved ::/8 (gồm cả IPv4-compatible ::7f00:1)
+        # và site-local fec0::/10.
+        if ip.is_reserved or ip.is_site_local:
+            return False
+        if any(ip in network for network in _NAT64_NETWORKS):
+            return False
+    return True
 
 
 def ensure_public_url(url: str, *, resolver: Resolver | None = None) -> PinnedTarget:
@@ -132,21 +149,30 @@ def ensure_public_url(url: str, *, resolver: Resolver | None = None) -> PinnedTa
     resolve = resolver or _system_resolver
     try:
         parsed = httpx.URL(url)
-    except Exception as exc:  # noqa: BLE001 - httpx.URL ném InvalidURL
+        scheme = parsed.scheme
+        host = parsed.host
+        port = parsed.port
+    except (ValueError, httpx.InvalidURL) as exc:
+        # Hostname hỏng làm .host ném UnicodeError/IDNAError, cả hai là
+        # ValueError; httpx ném InvalidURL khi URL sai cấu trúc.
         raise UnsafeUrlError(f"URL không hợp lệ: {exc}") from exc
-    if parsed.scheme not in ("http", "https"):
+    if scheme not in ("http", "https"):
         raise UnsafeUrlError("Chỉ chấp nhận URL http hoặc https")
-    if not parsed.host:
+    if not host:
         raise UnsafeUrlError("URL thiếu host")
     if parsed.userinfo:
         raise UnsafeUrlError("URL không được chứa thông tin đăng nhập")
-    port = parsed.port or (443 if parsed.scheme == "https" else 80)
+    if port is not None and not 1 <= port <= 65535:
+        raise UnsafeUrlError(f"Cổng không hợp lệ: {port}")
+    connect_port = port or (443 if scheme == "https" else 80)
     try:
-        resolved = [str(address) for address in resolve(parsed.host, port)]
-    except OSError as exc:
-        raise UnsafeUrlError(f"Không phân giải được host: {parsed.host}") from exc
+        resolved = [str(address) for address in resolve(host, connect_port)]
+    except (OSError, UnicodeError) as exc:
+        # Nhãn hostname quá dài làm getaddrinfo ném UnicodeError, không phải
+        # OSError; route chỉ đổi ExtractionError thành 422.
+        raise UnsafeUrlError(f"Không phân giải được host: {host}") from exc
     if not resolved:
-        raise UnsafeUrlError(f"Không phân giải được host: {parsed.host}")
+        raise UnsafeUrlError(f"Không phân giải được host: {host}")
     # Chỉ cần một địa chỉ nội bộ là cả URL bị từ chối: kẻ tấn công có thể trả
     # về cả IP công khai lẫn IP nội bộ và mong ta kết nối vào cái sau.
     for address in resolved:

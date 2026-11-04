@@ -77,6 +77,33 @@ def test_ipv6_local_addresses_are_blocked(address):
         ensure_public_url("http://example.com/", resolver=fake_resolver(address))
 
 
+@pytest.mark.parametrize("address", ["::7f00:1", "fec0::1", "64:ff9b::a9fe:a9fe"])
+def test_reserved_and_translated_ipv6_addresses_are_blocked(address):
+    with pytest.raises(UnsafeUrlError):
+        ensure_public_url("http://example.com/", resolver=fake_resolver(address))
+
+
+def test_a_malformed_hostname_is_rejected_as_unsafe():
+    with pytest.raises(UnsafeUrlError):
+        ensure_public_url("http://xn--/", resolver=fake_resolver("93.184.216.34"))
+
+
+def test_a_long_hostname_label_is_a_clean_url_error():
+    def resolver(host: str, port: int) -> list[str]:
+        raise UnicodeError("label empty or too long")
+
+    with pytest.raises(UnsafeUrlError):
+        ensure_public_url("http://example.com/", resolver=resolver)
+
+
+@pytest.mark.parametrize("port", [0, 65536, 99999])
+def test_out_of_range_ports_are_rejected(port):
+    with pytest.raises(UnsafeUrlError):
+        ensure_public_url(
+            f"http://example.com:{port}/", resolver=fake_resolver("93.184.216.34")
+        )
+
+
 def test_one_private_answer_blocks_the_whole_url():
     # Một tên miền trả cả IP công khai lẫn IP nội bộ phải bị từ chối.
     with pytest.raises(UnsafeUrlError):
