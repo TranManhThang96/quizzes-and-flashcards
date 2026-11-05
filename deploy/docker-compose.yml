@@ -18,6 +18,7 @@ services:
 
   api:
     build: ../backend
+    image: quizz-backend
     restart: unless-stopped
     depends_on:
       db:
@@ -27,10 +28,28 @@ services:
       QUIZZ_APP_ORIGIN: ${QUIZZ_APP_ORIGIN:?set QUIZZ_APP_ORIGIN in deploy/.env}
       QUIZZ_ENVIRONMENT: ${QUIZZ_ENVIRONMENT:-prod}
       QUIZZ_COOKIE_SECURE: ${QUIZZ_COOKIE_SECURE:-true}
-      FORWARDED_ALLOW_IPS: ${FORWARDED_ALLOW_IPS:-*}
+      QUIZZ_APP_TIMEZONE: ${QUIZZ_APP_TIMEZONE:-Asia/Ho_Chi_Minh}
+      FORWARDED_ALLOW_IPS: ${FORWARDED_ALLOW_IPS:?query the compose bridge gateway, see .env.example}
     ports:
       # Loopback only: the host nginx is the single public entry point.
       - "127.0.0.1:8000:8000"
+
+  worker:
+    build: ../backend
+    image: quizz-backend
+    restart: unless-stopped
+    # Same image as `api`, different process. No published port: it only talks
+    # to `db` and the LLM gateway.
+    command: ["python", "-m", "app.worker"]
+    depends_on:
+      db:
+        condition: service_healthy
+    environment:
+      QUIZZ_DATABASE_URL: postgresql+psycopg://quizz:${POSTGRES_PASSWORD}@db:5432/quizz
+      QUIZZ_ENVIRONMENT: ${QUIZZ_ENVIRONMENT:-prod}
+      QUIZZ_LLM_BASE_URL: ${QUIZZ_LLM_BASE_URL:?set QUIZZ_LLM_BASE_URL in deploy/.env}
+      QUIZZ_LLM_API_KEY: ${QUIZZ_LLM_API_KEY:?set QUIZZ_LLM_API_KEY in deploy/.env}
+      QUIZZ_LLM_MODEL: ${QUIZZ_LLM_MODEL:?set QUIZZ_LLM_MODEL in deploy/.env}
 
 volumes:
   pgdata:

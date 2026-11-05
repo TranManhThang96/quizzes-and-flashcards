@@ -21,6 +21,7 @@ Thư mục nào chưa có thì tạo khi có tài liệu đầu tiên.
 ## Mục lục
 
 - [Triển khai](architecture/deploy.md)
+- [Pipeline nội dung AI](architecture/ai-pipeline.md)
 - [SRS](architecture/srs.md)
 - [Design spec](specs/2026-11-02-quizzes-and-flashcards-design.md)
 - [Plan 1: nền tảng backend](plans/2026-11-02-foundation-backend.md)
