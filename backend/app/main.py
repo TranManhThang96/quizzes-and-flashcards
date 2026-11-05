@@ -7,6 +7,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.admin.exams import router as admin_exams_router
 from app.admin.items import router as admin_items_router
+from app.admin.jobs import router as admin_jobs_router
 from app.admin.sources import router as admin_sources_router
 from app.admin.topics import router as admin_topics_router
 from app.admin.users import router as admin_users_router
@@ -51,6 +52,7 @@ def create_app(settings: Settings | None = None) -> FastAPI:
     app.include_router(auth_router)
     app.include_router(admin_users_router)
     app.include_router(admin_sources_router)
+    app.include_router(admin_jobs_router)
     app.include_router(admin_topics_router)
     app.include_router(admin_items_router)
     app.include_router(admin_exams_router)
